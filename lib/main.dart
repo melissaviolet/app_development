@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 
+
 void main() => runApp(MaterialApp(home: WhatsApp()));
 
-class WhatsApp extends StatelessWidget {
+class WhatsApp extends StatefulWidget {
+  @override
+  State<WhatsApp> createState() => _WhatsAppState();
+}
+
+class _WhatsAppState extends State<WhatsApp> {
+  int level = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,6 +43,17 @@ class WhatsApp extends StatelessWidget {
         ],
       ),
 
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            level += 1;
+          });
+        },
+        child: Icon(Icons.add),
+
+        backgroundColor: Colors.cyan[300],
+      ),
+
       backgroundColor: Colors.black,
       body: Padding(
         padding: EdgeInsets.all(20.0),
@@ -43,9 +62,7 @@ class WhatsApp extends StatelessWidget {
           children: [
             Center(
               child: CircleAvatar(
-                backgroundImage: AssetImage(
-                  "assets/Heidelburg.jpg",
-              ),
+                backgroundImage: AssetImage("assets/Heidelburg.jpg"),
                 radius: 40.0,
               ),
             ),
@@ -71,7 +88,7 @@ class WhatsApp extends StatelessWidget {
             ),
             SizedBox(height: 10.0),
             Text(
-              "5",
+              '$level',
               style: TextStyle(
                 color: Colors.purple[300],
                 fontSize: 30.0,
@@ -98,4 +115,4 @@ class WhatsApp extends StatelessWidget {
       ),
     );
   }
-} 
+}
