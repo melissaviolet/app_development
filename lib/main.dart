@@ -1,5 +1,5 @@
+import 'package:demoapp/list.dart';
 import 'package:flutter/material.dart';
-
 
 void main() => runApp(MaterialApp(home: WhatsApp()));
 
@@ -14,6 +14,7 @@ class _WhatsAppState extends State<WhatsApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black87,
         title: Text(
@@ -33,7 +34,12 @@ class _WhatsAppState extends State<WhatsApp> {
           IconButton(
             icon: Icon(Icons.camera_alt),
             color: Colors.white,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => QuoteList()),
+              );
+            },
           ),
           IconButton(
             icon: Icon(Icons.more_vert),
@@ -54,7 +60,6 @@ class _WhatsAppState extends State<WhatsApp> {
         backgroundColor: Colors.cyan[300],
       ),
 
-      backgroundColor: Colors.black,
       body: Padding(
         padding: EdgeInsets.all(20.0),
         child: Column(
