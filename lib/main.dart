@@ -43,9 +43,9 @@ class WhatsApp extends StatelessWidget {
           children: [
             Center(
               child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  'https://c4.wallpaperflare.com/wallpaper/606/692/865/anime-anime-girls-artwork-car-vehicle-hd-wallpaper-preview.jpg',
-                ),
+                backgroundImage: AssetImage(
+                  "assets/Heidelburg.jpg",
+              ),
                 radius: 40.0,
               ),
             ),
