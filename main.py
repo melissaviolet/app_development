@@ -4,6 +4,7 @@ from gui_config import launch_config_gui
 from reader_dispatcher import read_sales
 from uploader import send_sales_to_firebase
 from config_manager import load_config
+from logger import log_sync
 
 def main():
     # Show configuration GUI if config.json doesn't exist
@@ -17,6 +18,8 @@ def main():
         sales = read_sales()
         send_sales_to_firebase(sales, config["store_id"])
 
+        log_sync("SUCCESS", config["store_id"], len(sales))
+
         # ✅ Show success popup
         root = tk.Tk()
         root.withdraw()
@@ -24,6 +27,8 @@ def main():
 
     except Exception as e:
         # ❌ Show error popup
+
+        log_sync("FAILED", config["store_id"], error=str(e))
         root = tk.Tk()
         root.withdraw()
         messagebox.showerror("Upload Failed", f"An error occurred:\n{str(e)}")
