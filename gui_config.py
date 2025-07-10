@@ -9,28 +9,13 @@ def save_config(config):
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=4)
 
-def load_config():
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
-def get_store_id():
-    config = load_config()
-    return config.get("store_id", "")
-
-def set_store_id(store_id):
-    config = load_config()
-    config["store_id"] = store_id
-    save_config(config)
-
 def launch_config_gui():
     def on_save():
         store_id = store_id_var.get().strip()
         pos_type = pos_type_var.get()
 
-        if not store_id:
-            messagebox.showwarning("Missing Store ID", "Please enter your store ID.")
+        if not store_id or not pos_type:
+            messagebox.showerror("Error", "Store ID and POS Source Type are required.")
             return
 
         config = {
@@ -56,19 +41,33 @@ def launch_config_gui():
             }
 
         save_config(config)
-        messagebox.showinfo("Success", "Configuration saved successfully!")
+        messagebox.showinfo("Saved", "Configuration saved successfully!")
         root.destroy()
 
     def choose_file(var):
         filename = filedialog.askopenfilename()
         var.set(filename)
 
+    def show_fields(*args):
+        # Hide all fields
+        for frame in all_frames:
+            frame.grid_remove()
+
+        selected = pos_type_var.get()
+        if selected == "csv":
+            csv_frame.grid(row=2, column=0, columnspan=3, pady=2)
+        elif selected == "sqlite":
+            sqlite_frame.grid(row=3, column=0, columnspan=3, pady=2)
+        elif selected == "mysql":
+            mysql_frame.grid(row=4, column=0, columnspan=3, pady=2)
+        elif selected == "api":
+            api_frame.grid(row=5, column=0, columnspan=3, pady=2)
+
+    # GUI Window
     root = tk.Tk()
     root.title("Connector Setup")
-    root.geometry("400x400")
 
-    # Variables
-    store_id_var = tk.StringVar(value=get_store_id())
+    store_id_var = tk.StringVar()
     pos_type_var = tk.StringVar()
     csv_path_var = tk.StringVar()
     sqlite_path_var = tk.StringVar()
@@ -79,39 +78,46 @@ def launch_config_gui():
     api_url_var = tk.StringVar()
     api_token_var = tk.StringVar()
 
-    # UI
-    ttk.Label(root, text="Store ID").grid(row=0, column=0, sticky="w", padx=5, pady=5)
-    ttk.Entry(root, textvariable=store_id_var).grid(row=0, column=1, padx=5)
+    ttk.Label(root, text="Store ID").grid(row=0, column=0, pady=5)
+    ttk.Entry(root, textvariable=store_id_var).grid(row=0, column=1)
 
-    ttk.Label(root, text="POS Source Type").grid(row=1, column=0, sticky="w", padx=5, pady=5)
-    ttk.Combobox(root, textvariable=pos_type_var, values=["csv", "sqlite", "mysql", "api"]).grid(row=1, column=1, padx=5)
+    ttk.Label(root, text="POS Source Type").grid(row=1, column=0, pady=5)
+    pos_dropdown = ttk.Combobox(root, textvariable=pos_type_var, values=["csv", "sqlite", "mysql", "api"])
+    pos_dropdown.grid(row=1, column=1)
+    pos_dropdown.bind("<<ComboboxSelected>>", show_fields)
 
-    ttk.Label(root, text="CSV File").grid(row=2, column=0, sticky="w", padx=5, pady=5)
-    ttk.Entry(root, textvariable=csv_path_var).grid(row=2, column=1, padx=5)
-    ttk.Button(root, text="Browse", command=lambda: choose_file(csv_path_var)).grid(row=2, column=2, padx=5)
+    # CSV
+    csv_frame = ttk.Frame(root)
+    ttk.Label(csv_frame, text="CSV File").grid(row=0, column=0)
+    ttk.Entry(csv_frame, textvariable=csv_path_var).grid(row=0, column=1)
+    ttk.Button(csv_frame, text="Browse", command=lambda: choose_file(csv_path_var)).grid(row=0, column=2)
 
-    ttk.Label(root, text="SQLite File").grid(row=3, column=0, sticky="w", padx=5, pady=5)
-    ttk.Entry(root, textvariable=sqlite_path_var).grid(row=3, column=1, padx=5)
-    ttk.Button(root, text="Browse", command=lambda: choose_file(sqlite_path_var)).grid(row=3, column=2, padx=5)
+    # SQLite
+    sqlite_frame = ttk.Frame(root)
+    ttk.Label(sqlite_frame, text="SQLite File").grid(row=0, column=0)
+    ttk.Entry(sqlite_frame, textvariable=sqlite_path_var).grid(row=0, column=1)
+    ttk.Button(sqlite_frame, text="Browse", command=lambda: choose_file(sqlite_path_var)).grid(row=0, column=2)
 
-    ttk.Label(root, text="MySQL Host").grid(row=4, column=0, sticky="w", padx=5)
-    ttk.Entry(root, textvariable=host_var).grid(row=4, column=1, padx=5)
-    ttk.Label(root, text="MySQL User").grid(row=5, column=0, sticky="w", padx=5)
-    ttk.Entry(root, textvariable=user_var).grid(row=5, column=1, padx=5)
-    ttk.Label(root, text="MySQL Pass").grid(row=6, column=0, sticky="w", padx=5)
-    ttk.Entry(root, textvariable=pass_var, show="*").grid(row=6, column=1, padx=5)
-    ttk.Label(root, text="MySQL DB").grid(row=7, column=0, sticky="w", padx=5)
-    ttk.Entry(root, textvariable=db_var).grid(row=7, column=1, padx=5)
+    # MySQL
+    mysql_frame = ttk.Frame(root)
+    ttk.Label(mysql_frame, text="MySQL Host").grid(row=0, column=0)
+    ttk.Entry(mysql_frame, textvariable=host_var).grid(row=0, column=1)
+    ttk.Label(mysql_frame, text="MySQL User").grid(row=1, column=0)
+    ttk.Entry(mysql_frame, textvariable=user_var).grid(row=1, column=1)
+    ttk.Label(mysql_frame, text="MySQL Pass").grid(row=2, column=0)
+    ttk.Entry(mysql_frame, textvariable=pass_var, show="*").grid(row=2, column=1)
+    ttk.Label(mysql_frame, text="MySQL DB").grid(row=3, column=0)
+    ttk.Entry(mysql_frame, textvariable=db_var).grid(row=3, column=1)
 
-    ttk.Label(root, text="API URL").grid(row=8, column=0, sticky="w", padx=5)
-    ttk.Entry(root, textvariable=api_url_var).grid(row=8, column=1, padx=5)
-    ttk.Label(root, text="API Token").grid(row=9, column=0, sticky="w", padx=5)
-    ttk.Entry(root, textvariable=api_token_var).grid(row=9, column=1, padx=5)
+    # API
+    api_frame = ttk.Frame(root)
+    ttk.Label(api_frame, text="API URL").grid(row=0, column=0)
+    ttk.Entry(api_frame, textvariable=api_url_var).grid(row=0, column=1)
+    ttk.Label(api_frame, text="API Token").grid(row=1, column=0)
+    ttk.Entry(api_frame, textvariable=api_token_var).grid(row=1, column=1)
+
+    all_frames = [csv_frame, sqlite_frame, mysql_frame, api_frame]
 
     ttk.Button(root, text="Save Config", command=on_save).grid(row=10, column=1, pady=15)
 
     root.mainloop()
-
-# For direct testing
-if __name__ == "__main__":
-    launch_config_gui()

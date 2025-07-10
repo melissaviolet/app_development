@@ -1,32 +1,32 @@
-from gui_config import launch_config_gui, get_store_id
+import tkinter as tk
+from tkinter import messagebox
+from gui_config import launch_config_gui
 from reader_dispatcher import read_sales
 from uploader import send_sales_to_firebase
 from config_manager import load_config
 
 def main():
-    config = load_config()
-
-    # If config or store_id missing, launch setup GUI
-    if not config or not config.get("store_id"):
+    # Show configuration GUI if config.json doesn't exist
+    try:
+        config = load_config()
+    except Exception:
         launch_config_gui()
-        config = load_config()  # reload after GUI save
+        config = load_config()
 
-    store_id = config.get("store_id")
-    if not store_id:
-        print("❌ Store ID is required. Please run setup again.")
-        return
+    try:
+        sales = read_sales()
+        send_sales_to_firebase(sales, config["store_id"])
 
-    print(f"Using store ID: {store_id}")
-    print(f"Using POS source: {config.get('source_type')}")
+        # ✅ Show success popup
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showinfo("Success", f"Uploaded {len(sales)} sales records for store: {config['store_id']}")
 
-    # read_sales should read config internally or accept config to read correct source
-    sales = read_sales(config)
-    if not sales:
-        print("❌ No sales data found.")
-        return
-
-    send_sales_to_firebase(sales, store_id=store_id)
-    print("✅ Sales upload complete.")
+    except Exception as e:
+        # ❌ Show error popup
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("Upload Failed", f"An error occurred:\n{str(e)}")
 
 if __name__ == "__main__":
     main()
