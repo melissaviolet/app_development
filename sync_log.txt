@@ -1,0 +1,3 @@
+[2025-07-11 01:07:25] STATUS: failure | Store: None | Records: 0 | ERROR: Unsupported source type
+[2025-07-11 10:44:19] STATUS: FAILED | Store: unknown | Records: 0 | ERROR: Unsupported source type
+[2025-07-11 10:44:28] STATUS: FAILED | Store: unknown | Records: 0 | ERROR: Unsupported source type

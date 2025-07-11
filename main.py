@@ -3,32 +3,33 @@ from tkinter import messagebox
 from gui_config import launch_config_gui
 from reader_dispatcher import read_sales
 from uploader import send_sales_to_firebase
-from config_manager import load_config
+from config_manager import load_config, get_store_id
 from logger import log_sync
 
 def main():
-    # Show configuration GUI if config.json doesn't exist
+    # Load or prompt for configuration
     try:
         config = load_config()
     except Exception:
         launch_config_gui()
         config = load_config()
 
-    try:
-        sales = read_sales()
-        send_sales_to_firebase(sales, config["store_id"])
+    # Use fallback if store_id is not set
+    store_id = get_store_id() or config.get("store_id", "unknown")
 
-        log_sync("SUCCESS", config["store_id"], len(sales))
+    try:
+        sales = read_sales(config)
+        send_sales_to_firebase(sales, store_id)
+
+        log_sync("SUCCESS", store_id, len(sales))
 
         # ✅ Show success popup
         root = tk.Tk()
         root.withdraw()
-        messagebox.showinfo("Success", f"Uploaded {len(sales)} sales records for store: {config['store_id']}")
+        messagebox.showinfo("Success", f"Uploaded {len(sales)} sales records for store: {store_id}")
 
     except Exception as e:
-        # ❌ Show error popup
-
-        log_sync("FAILED", config["store_id"], error=str(e))
+        log_sync("FAILED", store_id, error=str(e))
         root = tk.Tk()
         root.withdraw()
         messagebox.showerror("Upload Failed", f"An error occurred:\n{str(e)}")
