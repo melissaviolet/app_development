@@ -1,7 +1,0 @@
-{
-  "store_id": "kampala_supermarket",
-  "source_type": "csv",
-  "csv": {
-    "file_path": "sales.csv"
-  }
-}
