@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, filedialog, messagebox
 import json
 import os
 import csv
@@ -9,82 +9,89 @@ import requests
 CONFIG_FILE = "config.json"
 
 def launch_config_gui():
+    def choose_file(entry):
+        path = filedialog.askopenfilename()
+        entry.delete(0, tk.END)
+        entry.insert(0, path)
+
     def save_config():
+        source_type = source_var.get().lower()
+        store_id = store_id_entry.get().strip()
+
+        if not source_type or not store_id:
+            messagebox.showerror("Missing Info", "Please select source type and enter Store ID.")
+            return
+
         config = {
-            "source_type": source_var.get(),
-            "store_id": store_id_entry.get(),
+            "source_type": source_type,
+            "store_id": store_id,
             "field_mapping": {field: var.get() for field, var in field_vars.items()}
         }
 
-        # Add POS-specific fields
-        if config["source_type"] == "CSV":
+        # Add source-specific data
+        if source_type == "csv":
             config["csv_path"] = csv_path_entry.get()
-        elif config["source_type"] == "SQLite":
+        elif source_type == "sqlite":
             config["sqlite_path"] = sqlite_path_entry.get()
-        elif config["source_type"] == "MySQL":
+        elif source_type == "mysql":
             config["mysql"] = {
                 "host": host_entry.get(),
                 "user": user_entry.get(),
                 "password": password_entry.get(),
                 "database": database_entry.get()
             }
-        elif config["source_type"] == "API":
+        elif source_type == "api":
             config["api_url"] = api_url_entry.get()
+            config["api_token"] = api_token_entry.get()
 
-        missing_fields = [label for field, label in field_labels.items() if not field_vars[field].get()]
-        if missing_fields:
-            messagebox.showwarning("Missing Fields", f"Please map all required fields:\n\n{chr(10).join(missing_fields)}")
+        # Check field mappings
+        missing = [label for key, label in field_labels.items() if not field_vars[key].get()]
+        if missing:
+            messagebox.showwarning("Missing Fields", f"Map all required fields:\n\n{chr(10).join(missing)}")
             return
 
         with open(CONFIG_FILE, "w") as f:
-            json.dump(config, f, indent=2)
+            json.dump(config, f, indent=4)
 
-        messagebox.showinfo("Saved", "Configuration saved successfully!")
+        messagebox.showinfo("Success", "Configuration saved successfully.")
         root.destroy()
 
-    def show_fields(*args):
-        csv_frame.pack_forget()
-        sqlite_frame.pack_forget()
-        mysql_frame.pack_forget()
-        api_frame.pack_forget()
-        source = source_var.get()
-        if source == "CSV":
+    def show_fields(event=None):
+        for frame in all_frames:
+            frame.pack_forget()
+        selected = source_var.get()
+        if selected == "CSV":
             csv_frame.pack(fill="x")
-        elif source == "SQLite":
+        elif selected == "SQLite":
             sqlite_frame.pack(fill="x")
-        elif source == "MySQL":
+        elif selected == "MySQL":
             mysql_frame.pack(fill="x")
-        elif source == "API":
+        elif selected == "API":
             api_frame.pack(fill="x")
 
-    def detect_columns_and_populate():
+    def detect_columns():
         try:
-            source_type = source_var.get()
+            source = source_var.get()
             columns = []
 
-            if source_type == "CSV":
+            if source == "CSV":
                 path = csv_path_entry.get()
-                if not os.path.exists(path):
-                    raise Exception("CSV file not found.")
                 with open(path, newline='', encoding='utf-8') as f:
                     reader = csv.DictReader(f)
                     columns = reader.fieldnames or []
-            elif source_type == "SQLite":
+
+            elif source == "SQLite":
                 path = sqlite_path_entry.get()
-                if not os.path.exists(path):
-                    raise Exception("SQLite DB file not found.")
                 conn = sqlite3.connect(path)
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM sqlite_master WHERE type='table';")
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
                 tables = cursor.fetchall()
-                if not tables:
-                    raise Exception("No tables found in SQLite DB.")
-                # Try to get columns from the first table
-                table_name = tables[0][1]
-                cursor.execute(f"PRAGMA table_info({table_name});")
-                columns = [row[1] for row in cursor.fetchall()]
+                if tables:
+                    cursor.execute(f"PRAGMA table_info({tables[0][0]});")
+                    columns = [row[1] for row in cursor.fetchall()]
                 conn.close()
-            elif source_type == "MySQL":
+
+            elif source == "MySQL":
                 import mysql.connector
                 conn = mysql.connector.connect(
                     host=host_entry.get(),
@@ -95,60 +102,63 @@ def launch_config_gui():
                 cursor = conn.cursor()
                 cursor.execute("SHOW TABLES;")
                 tables = cursor.fetchall()
-                if not tables:
-                    raise Exception("No tables found in MySQL DB.")
-                table_name = tables[0][0]
-                cursor.execute(f"DESCRIBE {table_name};")
-                columns = [row[0] for row in cursor.fetchall()]
+                if tables:
+                    cursor.execute(f"DESCRIBE {tables[0][0]};")
+                    columns = [row[0] for row in cursor.fetchall()]
                 conn.close()
-            elif source_type == "API":
+
+            elif source == "API":
                 url = api_url_entry.get()
-                response = requests.get(url)
+                token = api_token_entry.get()
+                headers = {"Authorization": f"Bearer {token}"} if token else {}
+                response = requests.get(url, headers=headers)
                 if response.status_code == 200:
-                    sample = response.json()
-                    if isinstance(sample, list) and len(sample) > 0:
-                        columns = list(sample[0].keys())
+                    data = response.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        columns = list(data[0].keys())
                 else:
-                    raise Exception(f"API request failed: {response.status_code}")
+                    raise Exception(f"API returned status code {response.status_code}")
 
             if not columns:
-                raise Exception("No columns detected.")
+                raise Exception("No columns found")
 
             for var in field_vars.values():
-                var.set("")  # clear old value
-            for field, dropdown in field_dropdowns.items():
+                var.set("")
+            for dropdown in field_dropdowns.values():
                 dropdown.config(values=columns)
 
         except Exception as e:
-            messagebox.showerror("Error detecting columns", str(e))
+            messagebox.showerror("Detection Failed", str(e))
 
     root = tk.Tk()
     root.title("Connector Configuration")
 
-    tk.Label(root, text="Select Source Type:").pack()
+    # Source type and Store ID
+    tk.Label(root, text="POS Source Type:").pack()
     source_var = tk.StringVar()
     source_dropdown = ttk.Combobox(root, textvariable=source_var, values=["CSV", "SQLite", "MySQL", "API"])
     source_dropdown.bind("<<ComboboxSelected>>", show_fields)
     source_dropdown.pack()
 
-    # Store ID
     tk.Label(root, text="Store ID:").pack()
     store_id_entry = tk.Entry(root)
     store_id_entry.pack()
 
-    # Source-specific fields
+    # Source-specific frames
     csv_frame = tk.Frame(root)
     tk.Label(csv_frame, text="CSV File Path:").pack()
     csv_path_entry = tk.Entry(csv_frame)
     csv_path_entry.pack()
+    ttk.Button(csv_frame, text="Browse", command=lambda: choose_file(csv_path_entry)).pack()
 
     sqlite_frame = tk.Frame(root)
     tk.Label(sqlite_frame, text="SQLite DB Path:").pack()
     sqlite_path_entry = tk.Entry(sqlite_frame)
     sqlite_path_entry.pack()
+    ttk.Button(sqlite_frame, text="Browse", command=lambda: choose_file(sqlite_path_entry)).pack()
 
     mysql_frame = tk.Frame(root)
-    tk.Label(mysql_frame, text="MySQL Host:").pack()
+    tk.Label(mysql_frame, text="Host:").pack()
     host_entry = tk.Entry(mysql_frame)
     host_entry.pack()
     tk.Label(mysql_frame, text="User:").pack()
@@ -165,36 +175,39 @@ def launch_config_gui():
     tk.Label(api_frame, text="API URL:").pack()
     api_url_entry = tk.Entry(api_frame)
     api_url_entry.pack()
+    tk.Label(api_frame, text="API Token (optional):").pack()
+    api_token_entry = tk.Entry(api_frame)
+    api_token_entry.pack()
 
-    # Field Mapping Section
-    tk.Label(root, text="\nField Mapping (match your column names)").pack()
+    all_frames = [csv_frame, sqlite_frame, mysql_frame, api_frame]
+
+    # Field Mapping
+    tk.Label(root, text="\nField Mapping:").pack()
     mapping_frame = tk.Frame(root)
-    mapping_frame.pack(fill="x", padx=10, pady=2)
+    mapping_frame.pack(padx=10, pady=5)
 
     field_labels = {
-        "product_id": "Product ID Field",
-        "name": "Product Name Field",
-        "qty": "Quantity Field",
-        "price": "Price Field",
-        "timestamp": "Timestamp Field"
+        "product_id": "Product ID",
+        "name": "Product Name",
+        "qty": "Quantity",
+        "price": "Price",
+        "timestamp": "Timestamp"
     }
 
+    # Create field variables and dropdowns
     field_vars = {}
     field_dropdowns = {}
-    for i, (field, label) in enumerate(field_labels.items()):
+    for field, label in field_labels.items():
         row = tk.Frame(mapping_frame)
         row.pack(fill="x", pady=2)
-        tk.Label(row, text=label, width=20, anchor="w").pack(side="left")
+        tk.Label(row, text=label, width=15, anchor="w").pack(side="left")
         var = tk.StringVar()
         dropdown = ttk.Combobox(row, textvariable=var, values=[], state="normal")
         dropdown.pack(side="left", fill="x", expand=True)
         field_vars[field] = var
         field_dropdowns[field] = dropdown
 
-    # Detect Columns Button
-    tk.Button(root, text="Detect Columns", command=detect_columns_and_populate).pack(pady=5)
-
-    # Save Button
+    tk.Button(root, text="Detect Columns", command=detect_columns).pack(pady=5)
     tk.Button(root, text="Save Configuration", command=save_config).pack(pady=10)
 
     root.mainloop()
