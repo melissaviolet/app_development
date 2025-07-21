@@ -10,12 +10,7 @@ def launch_config_gui():
         config = {
             "source_type": source_var.get(),
             "store_id": store_id_entry.get(),
-            "field_mapping": {
-                "name": name_entry.get(),
-                "qty": qty_entry.get(),
-                "price": price_entry.get(),
-                "timestamp": timestamp_entry.get(),
-            }
+            "field_mapping": {field: var.get() for field, var in field_vars.items()}
         }
 
         # Add POS-specific fields
@@ -99,23 +94,29 @@ def launch_config_gui():
     api_url_entry = tk.Entry(api_frame)
     api_url_entry.pack()
 
-    # 🔑 Field Mapping Section
+    # 🔑 Field Mapping Section (Dropdowns for mapping)
     tk.Label(root, text="\nField Mapping (match your column names)").pack()
-    tk.Label(root, text="Product Name Column:").pack()
-    name_entry = tk.Entry(root)
-    name_entry.pack()
 
-    tk.Label(root, text="Quantity Column:").pack()
-    qty_entry = tk.Entry(root)
-    qty_entry.pack()
+    # Example: You can replace this with code to auto-detect columns from a CSV if you want
+    column_options = ["product_id", "name", "qty", "price", "timestamp"]  # Replace with detected columns if available
 
-    tk.Label(root, text="Price Column:").pack()
-    price_entry = tk.Entry(root)
-    price_entry.pack()
+    field_labels = {
+        "product_id": "Product ID Field",
+        "name": "Product Name Field",
+        "qty": "Quantity Field",
+        "price": "Price Field",
+        "timestamp": "Timestamp Field"
+    }
 
-    tk.Label(root, text="Timestamp Column:").pack()
-    timestamp_entry = tk.Entry(root)
-    timestamp_entry.pack()
+    field_vars = {}
+    for field, label in field_labels.items():
+        frame = tk.Frame(root)
+        frame.pack(fill="x", padx=10, pady=2)
+        tk.Label(frame, text=label, width=20, anchor="w").pack(side="left")
+        var = tk.StringVar()
+        dropdown = ttk.Combobox(frame, textvariable=var, values=column_options, state="normal")
+        dropdown.pack(side="left", fill="x", expand=True)
+        field_vars[field] = var
 
     # Save Button
     tk.Button(root, text="Save Configuration", command=save_config).pack(pady=10)
