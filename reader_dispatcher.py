@@ -4,28 +4,16 @@ from readers.reader_mysql import read_sales_from_mysql
 from readers.reader_api import read_sales_from_api
 
 def read_sales(config):
-    src = config.get("source_type")
-    if src == "csv":
-        return read_sales_from_csv(config["csv"]["file_path"])
-    elif src == "sqlite":
-        return read_sales_from_sqlite(config["sqlite"]["file_path"])
-    elif src == "mysql":
-        return read_sales_from_mysql(config["mysql"])
-    elif src == "api":
-        return read_sales_from_api(config["api"]["url"], config["api"].get("token"))
-    else:
-        raise ValueError("Unsupported source type")
-def read_sales(config):
-    source_type = config["source_type"]
+    source_type = config.get("source_type", "").lower()
     field_map = config.get("field_mapping", {})
 
-    if source_type == "CSV":
-        return read_from_csv(config["csv_path"], field_map)
-    elif source_type == "SQLite":
-        return read_from_sqlite(config["sqlite_path"], field_map)
-    elif source_type == "MySQL":
-        return read_from_mysql(config["mysql"], field_map)
-    elif source_type == "API":
-        return read_from_api(config["api_url"], field_map, config.get("api_token"))
+    if source_type == "csv":
+        return read_sales_from_csv(config["csv_path"], field_map)
+    elif source_type == "sqlite":
+        return read_sales_from_sqlite(config["sqlite_path"], field_map)
+    elif source_type == "mysql":
+        return read_sales_from_mysql(config["mysql"], field_map)
+    elif source_type == "api":
+        return read_sales_from_api(config["api_url"], field_map, config.get("api_token"))
     else:
         raise ValueError("Unsupported source type")
