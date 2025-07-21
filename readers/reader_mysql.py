@@ -1,17 +1,29 @@
 import mysql.connector
 
-def read_sales_from_mysql(config):
+def read_sales_from_mysql(mysql_config, field_map):
     conn = mysql.connector.connect(
-        host=config["host"],
-        user=config["user"],
-        password=config["password"],
-        database=config["database"]
+        host=mysql_config["host"],
+        user=mysql_config["user"],
+        password=mysql_config["password"],
+        database=mysql_config["database"]
     )
-    cur = conn.cursor()
-    cur.execute("SELECT product_id, name, qty, price, timestamp FROM sales")
-    rows = cur.fetchall()
+    cursor = conn.cursor()
+
+    # Build query using mapped fields
+    query = f"""
+        SELECT {field_map["name"]}, {field_map["qty"]}, {field_map["price"]}, {field_map["timestamp"]}
+        FROM sales
+    """
+    cursor.execute(query)
+    rows = cursor.fetchall()
     conn.close()
+
     return [
-        {"product_id": r[0], "name": r[1], "qty": r[2], "price": float(r[3]), "timestamp": r[4]}
-        for r in rows
+        {
+            "name": row[0],
+            "qty": int(row[1]),
+            "price": float(row[2]),
+            "timestamp": row[3]
+        }
+        for row in rows
     ]
