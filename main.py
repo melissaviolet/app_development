@@ -13,13 +13,6 @@ if getattr(sys, 'frozen', False):
 
 
 def main():
-
-    if not os.path.exists(CONFIG_FILE) or os.path.getsize(CONFIG_FILE) == 0:
-    # Launch GUI for first-time setup
-        launch_config_gui()
-    else:
-    # Load config and run background sync
-        run_silent_sync()
     # Load or prompt for configuration
     try:
         config = load_config()
