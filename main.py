@@ -1,10 +1,16 @@
 import tkinter as tk
+import sys
+import os
 from tkinter import messagebox
 from gui_config import launch_config_gui
 from reader_dispatcher import read_sales
 from uploader import send_sales_to_firebase
 from config_manager import load_config, get_store_id
 from logger import log_sync
+
+if getattr(sys, 'frozen', False):
+    os.chdir(sys._MEIPASS)
+
 
 def main():
     # Load or prompt for configuration
