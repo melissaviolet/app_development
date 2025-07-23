@@ -7,7 +7,7 @@ def read_sales(config):
     source_type = config.get("source_type", "").upper()
     field_map = config.get("field_mapping", {})
 
-    if source_type == "csv":
+    if source_type == "CSV":
         return read_sales_from_csv(config["csv_path"], field_map)
     elif source_type == "sqlite":
         return read_sales_from_sqlite(config["sqlite_path"], field_map)

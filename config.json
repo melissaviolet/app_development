@@ -1,5 +1,5 @@
 {
-    "source_type": "csv",
+    "source_type": "CSV",
     "store_id": "Banda Supermarket",
     "field_mapping": {
         "product_id": "id",
