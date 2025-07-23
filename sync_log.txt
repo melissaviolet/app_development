@@ -1,0 +1,2 @@
+[2025-07-23 22:52:01] STATUS: FAILED | Store: Banda Supermarket | Records: 0 | ERROR: 504 Deadline Exceeded
+[2025-07-23 23:00:14] STATUS: FAILED | Store: Banda Supermarket | Records: 0 | ERROR: Unsupported source type

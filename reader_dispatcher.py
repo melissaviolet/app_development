@@ -4,7 +4,7 @@ from readers.reader_mysql import read_sales_from_mysql
 from readers.reader_api import read_sales_from_api
 
 def read_sales(config):
-    source_type = config.get("source_type", "").lower()
+    source_type = config.get("source_type", "").upper()
     field_map = config.get("field_mapping", {})
 
     if source_type == "csv":
