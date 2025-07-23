@@ -1,6 +1,6 @@
 {
     "source_type": "CSV",
-    "store_id": "Banda Supermarket",
+    "store_id": "Capital Shoppers Nakasero",
     "field_mapping": {
         "product_id": "id",
         "name": "item",
