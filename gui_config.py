@@ -15,7 +15,7 @@ def launch_config_gui():
         entry.insert(0, path)
 
     def save_config():
-        source_type = source_var.get().lower()
+        source_type = source_var.get().upper()
         store_id = store_id_entry.get().strip()
 
         if not source_type or not store_id:
@@ -29,18 +29,18 @@ def launch_config_gui():
         }
 
         # Add source-specific data
-        if source_type == "csv":
+        if source_type == "CSV":
             config["csv_path"] = csv_path_entry.get()
-        elif source_type == "sqlite":
+        elif source_type == "SQLITE":
             config["sqlite_path"] = sqlite_path_entry.get()
-        elif source_type == "mysql":
+        elif source_type == "MYSQL":
             config["mysql"] = {
                 "host": host_entry.get(),
                 "user": user_entry.get(),
                 "password": password_entry.get(),
                 "database": database_entry.get()
             }
-        elif source_type == "api":
+        elif source_type == "API":
             config["api_url"] = api_url_entry.get()
             config["api_token"] = api_token_entry.get()
 

@@ -11,6 +11,10 @@ from logger import log_sync
 if getattr(sys, 'frozen', False):
     os.chdir(sys._MEIPASS)
 
+# import json
+# config = load_config()
+# print("DEBUG config content:", json.dumps(config, indent=2))
+
 
 def main():
     # Load or prompt for configuration
@@ -42,4 +46,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    input("Press Enter to exit...")
+    
