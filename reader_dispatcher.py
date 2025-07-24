@@ -16,4 +16,4 @@ def read_sales(config):
     elif source_type == "API":
         return read_sales_from_api(config["api_url"], field_map, config.get("api_token"))
     else:
-        raise ValueError(f"Unsupported source type:'{source_type}' from config: {config}")
+        raise ValueError(f"Unsupported source type:'{source_type}'")
