@@ -11,7 +11,7 @@ body {
 }
 
 h1, h2, h3 {
-  color: #007f7f; /* turquoise blue */
+  color: #06e65c; 
 }
 
 section {
@@ -26,12 +26,12 @@ section {
   background-position: left;
   background-repeat: no-repeat;
   padding: 100px 20px;
-  color: #004d4d;
+  color: #06e65c;
   min-height: 500px;
 }
 
 .hero h1 {
-  font-size: 3rem;
+  font-size: 7rem;
   margin-bottom: 20px;
 }
 
