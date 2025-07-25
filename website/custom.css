@@ -16,14 +16,18 @@ h1, h2, h3 {
 
 section {
   padding: 60px 20px;
-  text-align: center;
+  text-align: left;
 }
 
 /* Hero Section */
 .hero {
-  background-color: #a8e6cf; /* light green */
+  background-image: url('../images/hero.png'); 
+  background-size: cover;
+  background-position: left;
+  background-repeat: no-repeat;
   padding: 100px 20px;
   color: #004d4d;
+  min-height: 500px;
 }
 
 .hero h1 {
@@ -115,3 +119,6 @@ footer {
     padding: 40px 10px;
   }
 }
+
+
+
