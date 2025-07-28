@@ -1,6 +1,6 @@
 {
-    "source_type": "csv",
-    "store_id": "Capital shoppers nakasero",
+    "source_type": "CSV",
+    "store_id": "Diamond Supermarket Kampala",
     "field_mapping": {
         "product_id": "id",
         "name": "item",
